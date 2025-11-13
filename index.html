@@ -5,13 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Richter Scale - Interactive</title>
     
-    <!-- Tailwind CSS für Styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- GSAP für Animationen -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     
-    <!-- Fonts: Playfair Display (Serif) für Atmosphäre, Inter (Sans) für UI -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400&display=swap');
 
@@ -90,10 +87,6 @@
             transform: translateY(30px); /* Startet etwas weiter unten */
         }
 
-        .line.active {
-            /* GSAP übernimmt die Animation, diese Klasse markiert nur den Status */
-        }
-
         .line.dialogue {
             font-style: italic;
             color: #fff;
@@ -149,18 +142,15 @@
 </head>
 <body>
 
-    <!-- Visueller Hintergrund -->
     <div class="bg-container">
         <div class="blob blob-blue" id="blobBlue"></div>
         <div class="blob blob-green" id="blobGreen"></div>
     </div>
 
-    <!-- UI -->
     <div class="chapter-mark serif" id="chapterTitle">Chapter 1: "How fast can you get to Zurich?"</div>
     <div class="progress-bar" id="progressBar"></div>
     <div class="hint">Click/tap to continue</div>
 
-    <!-- Hier erscheint der Text -->
     <div class="story-container" id="story"></div>
 
     <script>
@@ -168,12 +158,7 @@
         // HIER FÜGST DU DEINEN TEXT EIN
         // ==========================================
         
-        // type: 'narrative' (normal), 'dialogue' (kursiv/heller), 'thought' (Gedanken/leiser)
-        // trigger: Optional. Löst visuelle Effekte aus. 
-        // Verfügbare Trigger: 'tension', 'closer', 'kiss', 'chaos', 'calm', 'heat'
-        
         const chapterContent = [
-            const chapterContent = [
             // --- SCENE 1: BOSTON RUNNING ---
             { text: "Chapter One: 'How fast can you get to Zurich?'", type: "narrative", trigger: "calm" },
             { text: "Lucas Castro was running his usual morning loop along the Charles River, breath steady and even.", type: "narrative" },
@@ -252,10 +237,9 @@
             { text: "Ari flushed. 'Fucking romantic', he whispered, resting his head against Jon’s shoulder.", type: "dialogue", trigger: "heat" },
             { text: "Up front, Lucas pretended not to have heard a word of it - but quietly, he couldn’t help smiling.", type: "narrative", trigger: "calm" }
         ];
-        ];
 
         // ==========================================
-        // ENGINE LOGIK (Hier musst du nichts ändern)
+        // ENGINE LOGIK
         // ==========================================
 
         let currentIndex = 0;
@@ -331,33 +315,27 @@
         function triggerEffect(triggerName) {
             switch(triggerName) {
                 case 'tension':
-                    // Blobs werden dunkler und bewegen sich unruhig
-                    gsap.to(blobBlue, { backgroundColor: "#172554", scale: 1.1, duration: 2 }); // Darker Blue
-                    gsap.to(blobGreen, { backgroundColor: "#022c22", scale: 0.9, duration: 2 }); // Darker Green
+                    gsap.to(blobBlue, { backgroundColor: "#172554", scale: 1.1, duration: 2 });
+                    gsap.to(blobGreen, { backgroundColor: "#022c22", scale: 0.9, duration: 2 });
                     break;
                 case 'closer':
-                    // Blobs rücken zusammen
                     gsap.to(blobBlue, { x: 150, y: 150, duration: 3, ease: "power2.inOut" });
                     gsap.to(blobGreen, { x: -150, y: -150, duration: 3, ease: "power2.inOut" });
                     break;
                 case 'kiss':
-                    // Verschmelzung & Aufleuchten
                     gsap.to(".blob", { mixBlendMode: "screen", duration: 0.5 });
-                    gsap.to(blobBlue, { scale: 1.5, backgroundColor: "#3b82f6", duration: 0.5 }); // Bright Blue
-                    gsap.to(blobGreen, { scale: 1.5, backgroundColor: "#10b981", duration: 0.5 }); // Bright Green
-                    document.body.style.backgroundColor = "#111"; // Kurzes Aufblitzen des Hintergrunds verhindern
+                    gsap.to(blobBlue, { scale: 1.5, backgroundColor: "#3b82f6", duration: 0.5 });
+                    gsap.to(blobGreen, { scale: 1.5, backgroundColor: "#10b981", duration: 0.5 });
+                    document.body.style.backgroundColor = "#111";
                     break;
                 case 'chaos':
-                    // Schnelle Bewegung, Bençe (Grün) dominiert
                     gsap.to(blobGreen, { x: Math.random()*200, y: Math.random()*200, duration: 0.5, yoyo: true, repeat: 3 });
                     break;
                 case 'heat':
-                    // Alles wird rötlicher/wärmer
-                    gsap.to(blobBlue, { backgroundColor: "#4c1d95", duration: 2 }); // Lila (Leidenschaft)
-                    gsap.to(blobGreen, { backgroundColor: "#be123c", duration: 2 }); // Rot (Heat)
+                    gsap.to(blobBlue, { backgroundColor: "#4c1d95", duration: 2 });
+                    gsap.to(blobGreen, { backgroundColor: "#be123c", duration: 2 });
                     break;
                 case 'calm':
-                    // Reset zu normalen Farben und Positionen
                     gsap.to(blobBlue, { x: 0, y: 0, scale: 1, backgroundColor: "#1e3a8a", duration: 3 });
                     gsap.to(blobGreen, { x: 0, y: 0, scale: 1, backgroundColor: "#064e3b", duration: 3 });
                     gsap.to(".blob", { mixBlendMode: "normal", duration: 3 });
