@@ -2,141 +2,95 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Richter Scale - Interactive</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Richter Scale - Focus Mode</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400&display=swap');
 
         body {
-            background-color: #0f0f11; /* Sehr dunkles Grau, fast Schwarz */
+            background-color: #0f0f11;
             color: #f3f4f6;
             font-family: 'Inter', sans-serif;
             overflow: hidden;
-            height: 100vh;
+            height: 100vh; /* Volle Höhe des Viewports */
+            height: 100dvh; /* Dynamic Viewport Height für Mobile Browser Bars */
             width: 100vw;
-            cursor: pointer; /* Der ganze Screen ist klickbar */
-            user-select: none; /* Verhindert versehentliches Markieren */
-        }
-
-        .serif {
-            font-family: 'Playfair Display', serif;
-        }
-
-        /* Hintergrund-Atmosphäre */
-        .bg-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -10;
-            overflow: hidden;
-        }
-
-        /* Die "Seelen"-Blobs */
-        .blob {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px); /* Macht sie weich und atmosphärisch */
-            opacity: 0.5;
-            transition: background-color 2s ease;
-        }
-
-        /* Blob 1: Lucas/Jon (Rationalität, Kühle, Struktur) */
-        .blob-blue {
-            width: 60vw;
-            height: 60vw;
-            background: #1e3a8a; 
-            top: -20%;
-            left: -20%;
-        }
-
-        /* Blob 2: Bençe (Natur, Chaos, Leben) */
-        .blob-green {
-            width: 50vw;
-            height: 50vw;
-            background: #064e3b;
-            bottom: -10%;
-            right: -10%;
-        }
-
-        /* Text Container */
-        .story-container {
-            position: relative;
-            max-width: 700px;
-            height: 100%;
-            margin: 0 auto;
-            padding: 2rem;
+            cursor: pointer;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent; /* Entfernt graue Box beim Tippen auf iPhone */
+            
+            /* Flexbox Zentrierung für den ganzen Body */
             display: flex;
             flex-direction: column;
             justify-content: center;
+            align-items: center;
+        }
+
+        .serif { font-family: 'Playfair Display', serif; }
+
+        .bg-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -10; overflow: hidden;
+        }
+
+        .blob {
+            position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.5; transition: background-color 2s ease;
+        }
+        .blob-blue { width: 70vw; height: 70vw; background: #1e3a8a; top: -20%; left: -20%; }
+        .blob-green { width: 60vw; height: 60vw; background: #064e3b; bottom: -10%; right: -10%; }
+
+        /* Container ist jetzt absolut zentriert und hat eine feste maximale Breite */
+        .story-container {
+            position: relative;
+            width: 85%; /* Breite für iPhone SE optimiert */
+            max-width: 600px;
+            height: auto;
+            min-height: 200px; /* Reserviert Platz damit nichts springt */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
             z-index: 10;
         }
 
-        /* Einzelne Textzeilen */
+        /* Die Textzeile */
         .line {
-            font-size: 1.35rem;
-            line-height: 1.6;
-            margin-bottom: 2rem;
-            opacity: 0; /* Startet unsichtbar */
-            transform: translateY(30px); /* Startet etwas weiter unten */
+            position: absolute; /* Liegt übereinander, damit Ein/Ausblenden am gleichen Ort passiert */
+            width: 100%;
+            font-size: 1.4rem; /* Etwas größer für bessere Lesbarkeit */
+            line-height: 1.5;
+            opacity: 0;
+            will-change: opacity, transform;
         }
 
-        .line.dialogue {
-            font-style: italic;
-            color: #fff;
-            text-shadow: 0 0 20px rgba(255,255,255,0.2);
+        /* Mobile Anpassungen für iPhone SE */
+        @media (max-width: 400px) {
+            .line { font-size: 1.2rem; line-height: 1.4; }
+            .blob { filter: blur(50px); } /* Performance auf alten Handys */
         }
 
-        .line.thought {
-            font-size: 1.1rem;
-            color: #9ca3af; /* Etwas dunkler */
-            letter-spacing: 0.05em;
-        }
+        .line.dialogue { font-style: italic; color: #fff; text-shadow: 0 0 15px rgba(255,255,255,0.3); }
+        .line.thought { color: #9ca3af; font-size: 1.1rem; letter-spacing: 0.02em; }
 
-        /* UI Elemente */
+        /* UI */
         .chapter-mark {
-            position: fixed;
-            top: 2rem;
-            left: 2rem;
-            font-size: 0.8rem;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            opacity: 0.5;
+            position: fixed; top: 2rem; width: 100%; text-align: center;
+            font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.4;
+            pointer-events: none;
         }
 
         .progress-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            height: 4px;
-            background: #ffffff;
-            width: 0%;
-            opacity: 0.3;
-            transition: width 0.5s ease;
+            position: fixed; bottom: 0; left: 0; height: 3px; background: #ffffff; width: 0%; opacity: 0.5; transition: width 0.3s ease;
         }
 
         .hint {
-            position: fixed;
-            bottom: 2rem;
-            width: 100%;
-            text-align: center;
-            font-size: 0.7rem;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            opacity: 0;
-            animation: pulse 3s infinite;
+            position: fixed; bottom: 3rem; width: 100%; text-align: center;
+            font-size: 0.7rem; opacity: 0; animation: pulse 3s infinite; pointer-events: none;
         }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.2; }
-            50% { opacity: 0.6; }
-        }
+        @keyframes pulse { 0%, 100% { opacity: 0.1; } 50% { opacity: 0.5; } }
 
     </style>
 </head>
@@ -147,19 +101,19 @@
         <div class="blob blob-green" id="blobGreen"></div>
     </div>
 
-    <div class="chapter-mark serif" id="chapterTitle">Chapter 1: "How fast can you get to Zurich?"</div>
+    <div class="chapter-mark serif" id="chapterTitle">Chapter 1</div>
     <div class="progress-bar" id="progressBar"></div>
-    <div class="hint">Click/tap to continue</div>
+    <div class="hint">Tap</div>
 
-    <div class="story-container" id="story"></div>
+    <div class="story-container" id="story">
+        </div>
 
     <script>
         // ==========================================
-        // HIER FÜGST DU DEINEN TEXT EIN
+        // VOLLSTÄNDIGER TEXT (Satz für Satz)
         // ==========================================
-        
         const chapterContent = [
-            // --- SCENE 1: BOSTON RUNNING ---
+// --- SCENE 1: BOSTON RUNNING ---
             { text: "Chapter One: 'How fast can you get to Zurich?'", type: "narrative", trigger: "calm" },
             { text: "Lucas Castro was running his usual morning loop along the Charles River, breath steady and even, while listening intently to a finance podcast he’d discovered the night before.", type: "narrative" },
             { text: "The Esplanade was quiet, and the city across the water was still wrapped in a soft haze that, Lucas knew, would burn off within the next half hour.", type: "narrative" },
@@ -195,56 +149,10 @@
             { text: "The line went dead. Lucas slowed just long enough to catch his breath. Not from exhaustion; he hadn't even finished his loop.", type: "narrative" },
             { text: "This wasn’t only about helping family. It was about proving he was useful. Lucas immediately picked up his pace.", type: "thought" },
             { text: "I can fix this.", type: "thought", trigger: "tension" },
-
-            // --- SCENE 2: ZURICH ARRIVAL ---
-            { text: "Ω", type: "narrative", trigger: "calm" },
-            { text: "Twelve hours later, the sliding doors of the Zurich Airport parted with a soft hiss.", type: "narrative" },
-            { text: "Cool, filtered air gave way to the warm chaos of Arrivals.", type: "narrative" },
-            { text: "And there they were. Jon and Ari.", type: "narrative" },
-            { text: "Jon’s arm draped casually around Ari’s waist, his posture calm, almost unreadable.", type: "narrative" },
-            { text: "Ari, by contrast, had that unmistakable flush in his ears; already halfway to a grin.", type: "narrative", trigger: "heat" },
-            { text: "Something in his whole frame leaned forward, like he couldn’t help it.", type: "narrative" },
-            { text: "A familiar weight settled in Lucas’ chest, not anxiety, more like attachment.", type: "thought" },
-            { text: "Jon pulled him into a solid, wordless hug. It was brief but deliberate.", type: "narrative", trigger: "closer" },
-            { text: "Then Ari stepped in; softer, quicker, wrapping his arms around Lucas’s shoulders and holding on just a second too long.", type: "narrative" },
-            { text: "'Alright, alright—let me breathe', Lucas laughed.", type: "dialogue" },
-            { text: "'My extra dads. You’re both ridiculous.'", type: "dialogue" },
-            { text: "He meant it with every fiber of his being. They were the lighthouses that had guided him home to himself.", type: "thought" },
-            { text: "He could tell Jon had teased Ari beforehand. The body language gave it away.", type: "thought" },
-            { text: "Jon cleared his throat; the classic retreat when emotions tried to leak through.", type: "narrative" },
-            { text: "'We’re so glad you came on such short notice', he said, voice lower than usual.", type: "dialogue" },
-            { text: "'Of course I came', Lucas said lightly. 'Family’s in trouble.'", type: "dialogue" },
-
-            // --- SCENE 3: THE CAR RIDE ---
-            { text: "They walked in silence for a few steps, Ari visible unimpressed by the Uetliberg in the background.", type: "narrative" },
-            { text: "'You know what I don’t get?', Lucas added. 'The panic didn’t start when the numbers dropped.'", type: "dialogue" },
-            { text: "'It started when the names of investors like you showed up in the second paragraph.'", type: "dialogue", trigger: "tension" },
-            { text: "Instead of answering, Jon nodded, eyes focused.", type: "narrative" },
-            { text: "It wasn’t until they were in the taxi that Lucas allowed the tension in his shoulders to ease.", type: "narrative" },
-            { text: "The interior smelled like leather and lemon wipes. Clean, restrained, clinical. Very Swiss.", type: "narrative" },
-            { text: "'Where are we staying?'", type: "dialogue" },
-            { text: "'Here, for now', Jon said. 'Then we’re heading to St. Moritz. Probably a week.'", type: "dialogue" },
-            { text: "Ari turned toward him, something mischievous tugging at the corner of his mouth.", type: "narrative", trigger: "chaos" },
-            { text: "'Maxwell and André land tomorrow.'", type: "dialogue" },
-            { text: "'They’re coming too?' Lucas raised his eyebrows.", type: "dialogue" },
-            { text: "A little warmth spread across his chest. The cavalry had style.", type: "thought" },
-            { text: "Jon gave a short laugh. 'Maxwell called yesterday. He saw my name on the list and offered to help.'", type: "dialogue" },
-            { text: "'And André', Ari added, 'shows up wherever chaos reigns. Right now, that’s here.'", type: "dialogue" },
-            { text: "'Yeah. It’s bad', Lucas nodded. 'Who else is caught up in it?'", type: "dialogue" },
-            { text: "Jon’s expression darkened.", type: "narrative", trigger: "tension" },
-            { text: "'Pretty much every major player in Europe. Power-hungry old men with the emotional intelligence of an ashtray.'", type: "dialogue" },
-            { text: "He shuddered slightly. 'Still not letting them ruin my vacation.'", type: "dialogue" },
-            { text: "He reached for Ari and pulled him closer.", type: "narrative", trigger: "closer" },
-            { text: "Ari turned toward him with an incredulous look. 'Vacation? Carver, this financial scandal is hanging over your head...'", type: "dialogue" },
-            { text: "'...and you’re calling this a vacation?'", type: "dialogue" },
-            { text: "Jon pulled him closer. 'Absolutely', he said gently.", type: "dialogue" },
-            { text: "'We’re together. The money—almost—doesn’t matter to me. Everything I need is right here, in my arms.'", type: "dialogue", trigger: "kiss" },
-            { text: "Ari flushed. 'Fucking romantic', he whispered, resting his head against Jon’s shoulder.", type: "dialogue", trigger: "heat" },
-            { text: "Up front, Lucas pretended not to have heard a word of it - but quietly, he couldn’t help smiling.", type: "narrative", trigger: "calm" }
         ];
 
         // ==========================================
-        // ENGINE LOGIK
+        // LOGIK
         // ==========================================
 
         let currentIndex = 0;
@@ -253,24 +161,11 @@
         const blobBlue = document.getElementById('blobBlue');
         const blobGreen = document.getElementById('blobGreen');
 
-        // Initiale Animation der Blobs (Schweben)
-        gsap.to(".blob", { 
-            y: "100px", 
-            duration: 8, 
-            repeat: -1, 
-            yoyo: true, 
-            ease: "sine.inOut" 
-        });
-        gsap.to("#blobGreen", { 
-            x: "-50px", 
-            duration: 10, 
-            repeat: -1, 
-            yoyo: true, 
-            ease: "sine.inOut",
-            delay: 1
-        });
+        // Initiale Blob Animation
+        gsap.to(".blob", { y: "10%", duration: 8, repeat: -1, yoyo: true, ease: "sine.inOut" });
+        gsap.to("#blobGreen", { x: "-10%", duration: 10, repeat: -1, yoyo: true, ease: "sine.inOut", delay: 1 });
 
-        // Klick-Handler
+        // Event Listeners
         document.addEventListener('click', showNextLine);
         document.addEventListener('keydown', (e) => {
             if(e.code === 'Space' || e.code === 'ArrowRight') showNextLine();
@@ -280,38 +175,34 @@
             if (currentIndex >= chapterContent.length) return;
 
             const data = chapterContent[currentIndex];
-            
-            // 1. Alte Zeilen verblassen lassen (Fokus-Effekt)
-            const oldLines = document.querySelectorAll('.line');
-            gsap.to(oldLines, { opacity: 0.2, filter: "blur(2px)", duration: 1 });
+            const oldLine = storyDiv.querySelector('.line');
 
-            // 2. Wenn zu viele Zeilen, die älteste entfernen
-            if (oldLines.length > 2) {
-                gsap.to(oldLines[0], { 
-                    height: 0, 
-                    margin: 0, 
-                    opacity: 0, 
-                    duration: 0.5, 
-                    onComplete: () => oldLines[0].remove() 
+            // 1. Altes Element entfernen (falls vorhanden)
+            if (oldLine) {
+                gsap.to(oldLine, {
+                    opacity: 0,
+                    y: -20, // Bewegt sich leicht nach oben beim Verschwinden
+                    duration: 0.3,
+                    onComplete: () => oldLine.remove()
                 });
             }
 
-            // 3. Neue Zeile erstellen
+            // 2. Neues Element erstellen
             const p = document.createElement('p');
             p.className = `line serif ${data.type || 'narrative'}`;
             p.innerText = data.text;
             storyDiv.appendChild(p);
 
-            // 4. Neue Zeile animieren (Text erscheint weich)
+            // 3. Neues Element animieren
             gsap.fromTo(p, 
-                { opacity: 0, y: 30 }, 
-                { opacity: 1, y: 0, duration: 1.2, ease: "power3.out" }
+                { opacity: 0, y: 20 }, // Kommt leicht von unten
+                { opacity: 1, y: 0, duration: 0.6, ease: "power2.out", delay: 0.2 } // Kleines Delay damit der alte Text weg ist
             );
 
-            // 5. Visuelle Effekte auslösen
+            // 4. Trigger Effekte
             if (data.trigger) triggerEffect(data.trigger);
 
-            // 6. Fortschrittsbalken updaten
+            // 5. Progress
             currentIndex++;
             const progress = (currentIndex / chapterContent.length) * 100;
             progressBar.style.width = `${progress}%`;
@@ -324,30 +215,28 @@
                     gsap.to(blobGreen, { backgroundColor: "#022c22", scale: 0.9, duration: 2 });
                     break;
                 case 'closer':
-                    gsap.to(blobBlue, { x: 150, y: 150, duration: 3, ease: "power2.inOut" });
-                    gsap.to(blobGreen, { x: -150, y: -150, duration: 3, ease: "power2.inOut" });
+                    gsap.to(blobBlue, { x: 50, y: 50, duration: 3 });
+                    gsap.to(blobGreen, { x: -50, y: -50, duration: 3 });
                     break;
                 case 'kiss':
                     gsap.to(".blob", { mixBlendMode: "screen", duration: 0.5 });
-                    gsap.to(blobBlue, { scale: 1.5, backgroundColor: "#3b82f6", duration: 0.5 });
-                    gsap.to(blobGreen, { scale: 1.5, backgroundColor: "#10b981", duration: 0.5 });
-                    document.body.style.backgroundColor = "#111";
+                    gsap.to(blobBlue, { scale: 1.3, backgroundColor: "#3b82f6" });
+                    gsap.to(blobGreen, { scale: 1.3, backgroundColor: "#10b981" });
                     break;
                 case 'chaos':
-                    gsap.to(blobGreen, { x: Math.random()*200, y: Math.random()*200, duration: 0.5, yoyo: true, repeat: 3 });
+                    gsap.to(blobGreen, { x: "random(-100, 100)", y: "random(-100, 100)", duration: 0.5, yoyo: true, repeat: 3 });
                     break;
                 case 'heat':
                     gsap.to(blobBlue, { backgroundColor: "#4c1d95", duration: 2 });
                     gsap.to(blobGreen, { backgroundColor: "#be123c", duration: 2 });
                     break;
                 case 'calm':
-                    gsap.to(blobBlue, { x: 0, y: 0, scale: 1, backgroundColor: "#1e3a8a", duration: 3 });
-                    gsap.to(blobGreen, { x: 0, y: 0, scale: 1, backgroundColor: "#064e3b", duration: 3 });
-                    gsap.to(".blob", { mixBlendMode: "normal", duration: 3 });
+                    gsap.to(blobBlue, { x: 0, y: 0, scale: 1, backgroundColor: "#1e3a8a", duration: 2 });
+                    gsap.to(blobGreen, { x: 0, y: 0, scale: 1, backgroundColor: "#064e3b", duration: 2 });
+                    gsap.to(".blob", { mixBlendMode: "normal", duration: 2 });
                     break;
             }
         }
-
     </script>
 </body>
 </html>
